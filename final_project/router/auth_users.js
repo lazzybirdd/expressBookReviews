@@ -30,10 +30,7 @@ const loginUser = (username, password) => { //returns boolean
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
 
-    if (!req.user) {
-        res.status(404).send("Session expired. Please login again");
-        return;
-    }
+    let username = req.session.authorization["username"];
 
     let review = req.query.review;
     if (!review) {
@@ -47,16 +44,16 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
         let book = books[isbn];
 
         // get review of current user
-        let r = book.reviews[user];
+        let r = book.reviews[username];
         if (r) {
             // if review does exist already - then update existing review (overwrite)
-            book.reviews[user] = review;
+            book.reviews[username] = review;
         } else {
             // if review does not exist - then create one
-            book.reviews[user] = review;
+            book.reviews[username] = review;
         }
 
-        res.send("");
+        res.send("Review of user " + username + " is updated");
     } else {
         res.status(404).send("No book found by isbn");
     }
@@ -65,10 +62,7 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
 //delete book review
 regd_users.delete("/auth/review/:isbn", (req, res) => {
 
-    if (!req.user) {
-        res.status(404).send("Session expired. Please login again");
-        return;
-    }
+    let username = req.session.authorization["username"];
 
     let isbn = req.params.isbn;
     // if isbn valid and book exists
@@ -76,10 +70,11 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
         let book = books[isbn];
 
         // delete review if it exists
-        if (book.reviews[user])
-            delete book.reviews[user];
+        if (book.reviews[username]) {
+            delete book.reviews[username];
+        }
 
-        res.send("");
+        res.send("Review of user " + username + " is deleted");
     } else {
         res.status(404).send("No book found by isbn");
     }
